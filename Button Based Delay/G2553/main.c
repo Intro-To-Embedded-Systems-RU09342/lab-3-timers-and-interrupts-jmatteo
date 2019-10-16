@@ -74,12 +74,12 @@ int main(void)
 {
     WDTCTL = WDTPW + WDTHOLD;                 // Stop watchdog timer
     BCSCTL3 = LFXT1S_2;                       // Tells MC to use internal crystal
-    P1DIR |= BIT0;                            // Set P1.0 as out
-    P1DIR &= ~BIT3;                           // Set P1.3 as in
-    P1DIR |= BIT6;                            // Set P1.6 to out
+    P1DIR |= BIT0;                            // Set P1.0 as output
+    P1DIR &= ~BIT3;                           // Set P1.3 as input
+    P1DIR |= BIT6;                            // Set P1.6 to output
     P1IE |=  BIT3;                            // P1.3 interrupt enabled
-    P1IES |= BIT3;                            // P1.3 falling edge
-    P1REN |= BIT3;                            // Enable Pull Up on SW2 (P1.3)
+    P1IES |= BIT3;                            // P1.3 interrupts on falling edge
+    P1REN |= BIT3;                            // Enable resistor on SW2 (P1.3)
     P1OUT |= BIT3;                            // Sets pull up resistor
     P1IFG &= ~BIT3;                           // P1.3 IFG cleared
 
@@ -87,10 +87,10 @@ int main(void)
     TA0CTL = TASSEL_1 + ID_1 + MC_1;          // Timer 0 control = ACLK, divide by 2, count up to CCR0
 
     //set up CCR1
-    CCTL0 =CCIE;                              // Enable capture compare interrupt
-    CCR0 = 300;                               // Change period
+    CCTL0 =CCIE;                              // Enables capture compare interrupt
+    CCR0 = 300;                               // Changes period
 
-    _BIS_SR(LPM0_bits + GIE);                 // Enable global interrupt
+    _BIS_SR(LPM0_bits + GIE);                 // Enables global interrupt
     return 0;
 }
 
@@ -99,7 +99,7 @@ int main(void)
 __interrupt void TIMER0_A1(void)
 {
 
-    P1OUT ^= BIT0;                            // Toggle P1.0 LED
+    P1OUT ^= BIT0;                            // Toggle LED P1.0
 
 }
 
@@ -108,23 +108,23 @@ __interrupt void TIMER0_A1(void)
 #pragma vector =PORT1_VECTOR
 __interrupt void Button_down(void)
 {
-    if (P1IES & BIT3)                         // If falling edge
+    if (P1IES & BIT3)                         // If (on falling edge)
     {
         P1IES &=~BIT3;                        // Change to rising edge
-        TACTL=TACLR;                          // Clear timer
-        TA0CTL = TASSEL_1 + ID_1 + MC_2;      // Change to continuous
+        TACTL=TACLR;                          // Clears timer
+        TA0CTL = TASSEL_1 + ID_1 + MC_2;      // Changes to continuous
         P1OUT |= BIT6;                        // Checks to see if we're in the if statement
     }
 
     else
     {
-        P1OUT &= ~BIT6;                       // Turn off if statement test LED
-        TA0CTL = MC_0;                        // Stop timer
-        CCR0 = TA0R;                          // Set CCR0 to current timer value
-        TACTL |= TACLR;                       // Clear timer
-        TA0CTL = TASSEL_1 + ID_1 + MC_1;      // Change to up mode
-        P1IES |= BIT3;                        // Change to falling edge detect
+        P1OUT &= ~BIT6;                       // Turns off if statement test LED
+        TA0CTL = MC_0;                        // Stops timer
+        CCR0 = TA0R;                          // Sets CCR0 to current timer value
+        TACTL |= TACLR;                       // Clears timer
+        TA0CTL = TASSEL_1 + ID_1 + MC_1;      // Changes to up mode
+        P1IES |= BIT3;                        // Changes to falling edge detect
     }
 
-    P1IFG &= ~BIT3;                           // Cear interrupt flag
+    P1IFG &= ~BIT3;                           // Clears interrupt flag
 }
